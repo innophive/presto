@@ -21,11 +21,14 @@ from different data sources.
 .. toctree::
     :maxdepth: 1
 
-    connector/blackhole
+    connector/teradata
     connector/hive
     connector/hive-security
-    connector/jmx
     connector/mysql
     connector/postgresql
-    connector/system
     connector/tpch
+    connector/system
+    connector/jmx
+    connector/blackhole
+
+   
