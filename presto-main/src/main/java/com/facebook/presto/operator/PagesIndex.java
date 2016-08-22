@@ -326,6 +326,16 @@ public class PagesIndex
         return new SimplePagesHashStrategy(types, ImmutableList.<List<Block>>copyOf(channels), joinChannels, hashChannel, joinFilterFunction);
     }
 
+    private JoinFilterFunctionVerifier createJoinFilterFunctionVerifier(Optional<JoinFilterFunction> filterFunction, List<List<Block>> channels)
+    {
+        if (filterFunction.isPresent()) {
+            return new StandardJoinFilterFunctionVerifier(filterFunction.get(), channels);
+        }
+        else {
+            return new EmptyJoinFilterFunctionVerifier();
+        }
+    }
+
     public LookupSource createLookupSource(List<Integer> joinChannels, Optional<Integer> hashChannel, Optional<JoinFilterFunction> filterFunction)
     {
         if (!filterFunction.isPresent() && !joinChannels.isEmpty()) {
@@ -343,7 +353,8 @@ public class PagesIndex
                 LookupSource lookupSource = lookupSourceFactory.createLookupSource(
                         valueAddresses,
                         ImmutableList.<List<Block>>copyOf(channels),
-                        hashChannel);
+                        hashChannel,
+                        createJoinFilterFunctionVerifier(filterFunction, ImmutableList.<List<Block>>copyOf(channels)));
 
                 return lookupSource;
             }
@@ -355,12 +366,12 @@ public class PagesIndex
         // if compilation fails
         PagesHashStrategy hashStrategy = new SimplePagesHashStrategy(
                 types,
-                ImmutableList.<List<Block>>copyOf(channels),
+                ImmutableList.copyOf(this.channels),
                 joinChannels,
                 hashChannel,
                 filterFunction);
 
-        return new InMemoryJoinHash(valueAddresses, hashStrategy);
+        return new InMemoryJoinHash(valueAddresses, hashStrategy, createJoinFilterFunctionVerifier(filterFunction, ImmutableList.copyOf(this.channels)));
     }
 
     @Override
