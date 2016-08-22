@@ -49,6 +49,14 @@ script:
   - |
     test ! -v PRODUCT_TESTS ||
       presto-product-tests/bin/run_on_docker.sh \
+        singlenode-ldap -g cli
+  - |
+    test ! -v PRODUCT_TESTS ||
+      presto-product-tests/bin/run_on_docker.sh \
+        singlenode-ldap -x quarantine,big_query,storage_formats,profile_specific_tests
+  - |
+    test ! -v PRODUCT_TESTS ||
+      presto-product-tests/bin/run_on_docker.sh \
         multinode -x quarantine,big_query,storage_formats,profile_specific_tests
   - |
     test ! -v PRODUCT_TESTS ||
