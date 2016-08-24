@@ -18,6 +18,10 @@ import com.facebook.presto.spi.block.Block;
 public class EmptyJoinFilterFunctionVerifier
         implements JoinFilterFunctionVerifier
 {
+    public static final EmptyJoinFilterFunctionVerifier EMPTY_JOIN_FILTER_FUNCTION_VERIFIER = new EmptyJoinFilterFunctionVerifier();
+
+    private EmptyJoinFilterFunctionVerifier() {}
+
     @Override
     public boolean applyFilterFunction(int leftBlockIndex, int leftPosition, int rightPosition, Block[] allRightBlocks)
     {

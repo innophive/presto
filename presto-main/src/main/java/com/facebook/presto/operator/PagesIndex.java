@@ -328,12 +328,7 @@ public class PagesIndex
 
     private JoinFilterFunctionVerifier createJoinFilterFunctionVerifier(Optional<JoinFilterFunction> filterFunction, List<List<Block>> channels)
     {
-        if (filterFunction.isPresent()) {
-            return new StandardJoinFilterFunctionVerifier(filterFunction.get(), channels);
-        }
-        else {
-            return new EmptyJoinFilterFunctionVerifier();
-        }
+        return joinCompiler.compileJoinFilterFunctionVerifierFactory(filterFunction).createJoinFilterFunctionVerifier(filterFunction, channels);
     }
 
     public LookupSource createLookupSource(List<Integer> joinChannels, Optional<Integer> hashChannel, Optional<JoinFilterFunction> filterFunction)
