@@ -62,8 +62,8 @@ import static org.openjdk.jmh.annotations.Scope.Thread;
 @OutputTimeUnit(MILLISECONDS)
 @BenchmarkMode(AverageTime)
 @Fork(3)
-@Warmup(iterations = 5)
-@Measurement(iterations = 20)
+@Warmup(iterations = 10)
+@Measurement(iterations = 10)
 public class BenchmarkHashBuildAndJoinOperators
 {
     private static final int HASH_BUILD_OPERATOR_ID = 1;
@@ -109,7 +109,7 @@ public class BenchmarkHashBuildAndJoinOperators
 
             initializeBuildPages();
 
-            lookupSourceSupplier = new BenchmarkHashBuildAndJoinOperators().benchmarkBuildHash(this);
+            lookupSourceSupplier = new BenchmarkHashBuildAndJoinOperators().buildJoinUBenchto(this);
         }
 
         public TaskContext createTaskContext()
@@ -235,7 +235,7 @@ public class BenchmarkHashBuildAndJoinOperators
     }
 
     @Benchmark
-    public LookupSourceSupplier benchmarkBuildHash(BuildContext buildContext)
+    public LookupSourceSupplier buildJoinUBenchto(BuildContext buildContext)
     {
         DriverContext driverContext = buildContext.createTaskContext().addPipelineContext(true, true).addDriverContext();
 
@@ -264,7 +264,7 @@ public class BenchmarkHashBuildAndJoinOperators
     }
 
     @Benchmark
-    public List<Page> benchmarkJoinHash(JoinContext joinContext)
+    public List<Page> joinUBenchto(JoinContext joinContext)
     {
         LookupSourceSupplier lookupSourceSupplier = joinContext.getLookupSourceSupplier();
 
