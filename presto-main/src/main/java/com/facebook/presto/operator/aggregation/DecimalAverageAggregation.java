@@ -16,7 +16,6 @@ package com.facebook.presto.operator.aggregation;
 import com.facebook.presto.bytecode.DynamicClassLoader;
 import com.facebook.presto.metadata.BoundVariables;
 import com.facebook.presto.metadata.FunctionRegistry;
-import com.facebook.presto.metadata.Signature;
 import com.facebook.presto.metadata.SqlAggregationFunction;
 import com.facebook.presto.operator.aggregation.state.BigIntegerAndLongState;
 import com.facebook.presto.operator.aggregation.state.BigIntegerAndLongStateFactory;
@@ -29,12 +28,14 @@ import com.facebook.presto.spi.type.DecimalType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import java.lang.invoke.MethodHandle;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
+import static com.facebook.presto.metadata.SignatureBinder.bindVariables;
 import static com.facebook.presto.operator.aggregation.AggregationMetadata.ParameterMetadata;
 import static com.facebook.presto.operator.aggregation.AggregationMetadata.ParameterMetadata.ParameterType.BLOCK_INDEX;
 import static com.facebook.presto.operator.aggregation.AggregationMetadata.ParameterMetadata.ParameterType.BLOCK_INPUT_CHANNEL;
@@ -43,11 +44,11 @@ import static com.facebook.presto.operator.aggregation.AggregationUtils.generate
 import static com.facebook.presto.spi.type.Decimals.decodeUnscaledValue;
 import static com.facebook.presto.spi.type.Decimals.writeBigDecimal;
 import static com.facebook.presto.spi.type.Decimals.writeShortDecimal;
-import static com.facebook.presto.spi.type.StandardTypes.DECIMAL;
 import static com.facebook.presto.spi.type.TypeSignature.parseTypeSignature;
 import static com.facebook.presto.util.ImmutableCollectors.toImmutableList;
 import static com.facebook.presto.util.Reflection.methodHandle;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.math.BigDecimal.ROUND_HALF_UP;
 
 public class DecimalAverageAggregation
@@ -66,7 +67,11 @@ public class DecimalAverageAggregation
 
     public DecimalAverageAggregation()
     {
-        super(NAME, ImmutableList.of(Signature.withVariadicBound("T", DECIMAL)), ImmutableList.of(), parseTypeSignature("T"), ImmutableList.of(parseTypeSignature("T")));
+        super(NAME,
+                ImmutableList.of(),
+                ImmutableList.of(),
+                parseTypeSignature("decimal(p,s)", ImmutableSet.of("p", "s")),
+                ImmutableList.of(parseTypeSignature("decimal(p,s)", ImmutableSet.of("p", "s"))));
     }
 
     @Override
@@ -78,7 +83,7 @@ public class DecimalAverageAggregation
     @Override
     public InternalAggregationFunction specialize(BoundVariables boundVariables, int arity, TypeManager typeManager, FunctionRegistry functionRegistry)
     {
-        Type type = boundVariables.getTypeVariable("T");
+        Type type = typeManager.getType(getOnlyElement(bindVariables(getSignature().getArgumentTypes(), boundVariables)));
         return generateAggregation(type);
     }
 
