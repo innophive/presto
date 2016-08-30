@@ -20,7 +20,6 @@ import org.testng.annotations.Test;
 
 import static com.facebook.presto.SessionTestUtils.TEST_SESSION;
 import static com.facebook.presto.spi.StandardErrorCode.DIVISION_BY_ZERO;
-import static com.facebook.presto.spi.StandardErrorCode.INVALID_FUNCTION_ARGUMENT;
 import static com.facebook.presto.spi.StandardErrorCode.NUMERIC_VALUE_OUT_OF_RANGE;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
@@ -247,7 +246,7 @@ public class TestMathFunctions
         assertFunction("truncate(NULL, NULL)", createDecimalType(1, 0), null);
 
         // OUT OF RANGE DECIMAL
-        assertInvalidFunction("truncate(DECIMAL '1234567890123456789012345678901234567890123', 0)", INVALID_FUNCTION_ARGUMENT);
+        assertInvalidFunction("truncate(DECIMAL '1234567890123456789012345678901234567890123', 0)", NUMERIC_VALUE_OUT_OF_RANGE);
     }
 
     @Test
