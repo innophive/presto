@@ -38,6 +38,7 @@ import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.teradata.tpcds.Scaling;
 import com.teradata.tpcds.Table;
 import com.teradata.tpcds.column.CallCenterColumn;
 import com.teradata.tpcds.column.CatalogPageColumn;
@@ -66,6 +67,7 @@ import com.teradata.tpcds.column.WebReturnsColumn;
 import com.teradata.tpcds.column.WebSalesColumn;
 import com.teradata.tpcds.column.WebSiteColumn;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -229,11 +231,20 @@ public class TpcdsMetadata
             tpcdsTable = Optional.of(Table.TIME_DIM);
         }
 
+        ConnectorTableLayout layout;
         if (!partitioningColumn.isPresent()) {
-            throw new IllegalArgumentException(format("Table %s does not exist", tableHandle.getTableName()));
+            layout = new ConnectorTableLayout(
+                    new TpcdsTableLayoutHandle(tableHandle),
+                    Optional.empty(),
+                    TupleDomain.all(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    Optional.empty(),
+                    new ArrayList<>());
         }
-
-        ConnectorTableLayout layout = createLayoutForPartitioningColumn(tableHandle, partitioningColumn.get(), tpcdsTable.get());
+        else {
+            layout = createLayoutForPartitioningColumn(tableHandle, partitioningColumn.get(), tpcdsTable.get());
+        }
         return ImmutableList.of(new ConnectorTableLayoutResult(layout, constraint.getSummary()));
     }
 
@@ -263,7 +274,7 @@ public class TpcdsMetadata
         ImmutableList.Builder<ColumnMetadata> columns = ImmutableList.builder();
         for (Column column : tpcdsTable.getColumns()) {
             columns.add(new ColumnMetadata(column.getName(), getPrestoType(column.getType())));
-    }
+        }
         SchemaTableName tableName = new SchemaTableName(schemaName, tpcdsTable.getName());
         return new ConnectorTableMetadata(tableName, columns.build());
     }
@@ -349,7 +360,7 @@ public class TpcdsMetadata
         }
     }
 
-    private static Type getPrestoType(ColumnType tpcdsType)
+    public static Type getPrestoType(ColumnType tpcdsType)
     {
         switch (tpcdsType.getBase()) {
             case IDENTIFIER:
@@ -374,7 +385,7 @@ public class TpcdsMetadata
         Optional<ConnectorNodePartitioning> nodePartitioning = Optional.of(new ConnectorNodePartitioning(
                 new TpcdsPartitioningHandle(
                         table.getName(),
-                        table.getScalingInfo().getRowCountForScale((int) tableHandle.getScaleFactor())),
+                        new Scaling(tableHandle.getScaleFactor()).getRowCount(table)),
                 ImmutableList.of(partitioningColumn)
         ));
         Optional<Set<ColumnHandle>> partitioningColumns = Optional.of(ImmutableSet.of(partitioningColumn));
