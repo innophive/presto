@@ -124,14 +124,6 @@ public class LdapTests
     }
 
     @Test(groups = {LDAP, SIMBA_JDBC, PROFILE_SPECIFIC_TESTS}, timeOut = TIMEOUT)
-    @Requires(ImmutableTpchTablesRequirements.ImmutableNationTable.class)
-    public void shouldPassQueryForLdapUserInMultipleGroups()
-            throws InterruptedException, SQLException
-    {
-        assertThat(executeQuery(SELECT_QUERY, "UserInMultipleGroups", ldapUserPassword)).matches(PRESTO_NATION_RESULT);
-    }
-
-    @Test(groups = {LDAP, SIMBA_JDBC, PROFILE_SPECIFIC_TESTS}, timeOut = TIMEOUT)
     public void shouldFailQueryForLdapUserInChildGroup()
             throws InterruptedException
     {
