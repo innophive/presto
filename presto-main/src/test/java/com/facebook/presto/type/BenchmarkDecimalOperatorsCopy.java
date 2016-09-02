@@ -37,6 +37,7 @@ import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.ExpressionTreeRewriter;
 import com.google.common.collect.ImmutableList;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -73,10 +74,12 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.openjdk.jmh.annotations.Mode.AverageTime;
 import static org.openjdk.jmh.annotations.Scope.Thread;
 
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
+@BenchmarkMode(AverageTime)
 @Fork(value = 3, jvmArgs = "-XX:MaxInlineSize=100")
 @Warmup(iterations = 20, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 10, timeUnit = TimeUnit.MILLISECONDS)
@@ -95,7 +98,7 @@ public class BenchmarkDecimalOperatorsCopy
     {
         private static final int SCALE = 2;
 
-        @Param({"10", "35", "BIGINT"})
+        @Param({"10", "35"})
         private String precision;
 
         @Setup
@@ -104,14 +107,9 @@ public class BenchmarkDecimalOperatorsCopy
             addSymbol("d1", DOUBLE);
 
             String expression;
-            if (precision.equals("BIGINT")) {
-                setDoubleMaxValue(Long.MAX_VALUE);
-                expression = "CAST(d1 AS BIGINT)";
-            }
-            else {
-                setDoubleMaxValue(Math.pow(9, Integer.valueOf(precision) - SCALE));
-                expression = String.format("CAST(d1 AS DECIMAL(%s, %d))", precision, SCALE);
-            }
+            setDoubleMaxValue(Math.pow(9, Integer.valueOf(precision) - SCALE));
+            expression = String.format("CAST(d1 AS DECIMAL(%s, %d))", precision, SCALE);
+
             generateRandomInputPage();
             generateProcessor(expression);
             generateResultPageBuilder(expression);
@@ -119,7 +117,7 @@ public class BenchmarkDecimalOperatorsCopy
     }
 
     @Benchmark
-    public List<Page> castDoubleToDecimalBenchmark(CastDoubleToDecimalBenchmarkState state)
+    public List<Page> doubleToDecimalUBenchto(CastDoubleToDecimalBenchmarkState state)
     {
         return execute(state);
     }
@@ -146,7 +144,7 @@ public class BenchmarkDecimalOperatorsCopy
     }
 
     @Benchmark
-    public List<Page> castDecimalToDoubleBenchmark(CastDecimalToDoubleBenchmarkState state)
+    public List<Page> decimalToDoubleUBenchto(CastDecimalToDoubleBenchmarkState state)
     {
         return execute(state);
     }
@@ -155,32 +153,20 @@ public class BenchmarkDecimalOperatorsCopy
     public static class AdditionBenchmarkState
             extends BaseState
     {
-        @Param({"d1 + d2",
-                "d1 + d2 + d3 + d4",
-                "s1 + s2",
-                "s1 + s2 + s3 + s4",
-                "l1 + l2",
-                "l1 + l2 + l3 + l4",
-                "s2 + l3 + l1 + s4"})
+        @Param({"s1 + s2 + s3 + s4",
+                "s2 + l2 + l1 + s4"})
         private String expression;
 
         @Setup
         public void setup()
         {
-            addSymbol("d1", DOUBLE);
-            addSymbol("d2", DOUBLE);
-            addSymbol("d3", DOUBLE);
-            addSymbol("d4", DOUBLE);
-
             addSymbol("s1", createDecimalType(10, 5));
             addSymbol("s2", createDecimalType(7, 2));
             addSymbol("s3", createDecimalType(12, 2));
             addSymbol("s4", createDecimalType(2, 1));
 
             addSymbol("l1", createDecimalType(35, 10));
-            addSymbol("l2", createDecimalType(25, 5));
-            addSymbol("l3", createDecimalType(20, 6));
-            addSymbol("l4", createDecimalType(25, 8));
+            addSymbol("l2", createDecimalType(20, 6));
 
             generateRandomInputPage();
             generateProcessor(expression);
@@ -189,7 +175,7 @@ public class BenchmarkDecimalOperatorsCopy
     }
 
     @Benchmark
-    public List<Page> additionBenchmark(AdditionBenchmarkState state)
+    public List<Page> decimalAddUBenchto(AdditionBenchmarkState state)
     {
         return execute(state);
     }
@@ -198,22 +184,13 @@ public class BenchmarkDecimalOperatorsCopy
     public static class InequalityBenchmarkState
             extends BaseState
     {
-        @Param({"d1 < d2",
-                "d1 < d2 AND d1 < d3 AND d1 < d4 AND d2 < d3 AND d2 < d4 AND d3 < d4",
-                "s1 < s2",
-                "s1 < s2 AND s1 < s3 AND s1 < s4 AND s2 < s3 AND s2 < s4 AND s3 < s4",
-                "l1 < l2",
-                "l1 < l2 AND l1 < l3 AND l1 < l4 AND l2 < l3 AND l2 < l4 AND l3 < l4"})
+        @Param({"s1 < s2 AND s1 < s3 AND s1 < s4",
+                "l1 < l2 AND l1 < l3 AND l1 < l4"})
         private String expression;
 
         @Setup
         public void setup()
         {
-            addSymbol("d1", DOUBLE);
-            addSymbol("d2", DOUBLE);
-            addSymbol("d3", DOUBLE);
-            addSymbol("d4", DOUBLE);
-
             addSymbol("s1", SHORT_DECIMAL_TYPE);
             addSymbol("s2", SHORT_DECIMAL_TYPE);
             addSymbol("s3", SHORT_DECIMAL_TYPE);
@@ -224,14 +201,14 @@ public class BenchmarkDecimalOperatorsCopy
             addSymbol("l3", LONG_DECIMAL_TYPE);
             addSymbol("l4", LONG_DECIMAL_TYPE);
 
-            generateInputPage(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+            generateInputPage(0, 1, 2, 3, 4, 5, 6, 7);
             generateProcessor(expression);
             generateResultPageBuilder(expression);
         }
     }
 
     @Benchmark
-    public List<Page> inequalityBenchmark(InequalityBenchmarkState state)
+    public List<Page> decimalIneqUBenchto(InequalityBenchmarkState state)
     {
         return execute(state);
     }
@@ -263,35 +240,7 @@ public class BenchmarkDecimalOperatorsCopy
     }
 
     @Benchmark
-    public List<Page> decimalToShortDecimalCastBenchmark(DecimalToShortDecimalCastBenchmarkState state)
-    {
-        return execute(state);
-    }
-
-    @State(Thread)
-    public static class DecimalToDoubleCastBenchmarkState
-            extends BaseState
-    {
-        @Param({"cast(l_38_30 as double)",
-                "cast(l_38_2 as double)",
-                "cast(s_17_9 as double)"})
-        private String expression;
-
-        @Setup
-        public void setup()
-        {
-            addSymbol("l_38_30", createDecimalType(38, 30));
-            addSymbol("l_38_2", createDecimalType(38, 2));
-            addSymbol("s_17_9", createDecimalType(17, 9));
-
-            generateInputPage(10000, 10000, 10000);
-            generateProcessor(expression);
-            generateResultPageBuilder(expression);
-        }
-    }
-
-    @Benchmark
-    public List<Page> decimalToDoubleCastBenchmark(DecimalToDoubleCastBenchmarkState state)
+    public List<Page> decimalToShortDecimalUBenchto(DecimalToShortDecimalCastBenchmarkState state)
     {
         return execute(state);
     }
