@@ -27,7 +27,8 @@ import static com.teradata.tempto.process.JavaProcessLauncher.defaultJavaProcess
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 
-public class PrestoCliUtils extends ProductTest
+public class PrestoCliLauncher
+        extends ProductTest
 {
     protected static final long TIMEOUT = 300 * 1000; // 30 secs per test
     protected static final String EXIT_COMMAND = "exit";
@@ -44,14 +45,14 @@ public class PrestoCliUtils extends ProductTest
 
     protected PrestoCliProcess presto;
 
-    public PrestoCliUtils()
+    protected PrestoCliLauncher()
             throws IOException
     {
         nationTableInteractiveLines = readLines(getResource("com/facebook/presto/tests/cli/interactive_query.results"), UTF_8);
         nationTableBatchLines = readLines(getResource("com/facebook/presto/tests/cli/batch_query.results"), UTF_8);
     }
 
-    public void stopPresto()
+    protected void stopPresto()
             throws InterruptedException
     {
         if (presto != null) {

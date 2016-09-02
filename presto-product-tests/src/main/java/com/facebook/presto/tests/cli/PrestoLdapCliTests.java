@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.Assert.assertTrue;
 
 public class PrestoLdapCliTests
-        extends PrestoCliUtils
+        extends PrestoCliLauncher
         implements RequirementsProvider
 {
     @Inject(optional = true)

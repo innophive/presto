@@ -40,7 +40,7 @@ import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PrestoCliTests
-        extends PrestoCliUtils
+        extends PrestoCliLauncher
         implements RequirementsProvider
 {
     @Inject(optional = true)
@@ -120,7 +120,6 @@ public class PrestoCliTests
             throws IOException, InterruptedException
     {
         launchPrestoCliWithServerArgument("--execute", "select * from hive.default.nation;");
-
         assertThat(trimLines(presto.readRemainingOutputLines())).containsAll(nationTableBatchLines);
     }
 
