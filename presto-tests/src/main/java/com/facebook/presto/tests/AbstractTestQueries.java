@@ -4830,8 +4830,8 @@ public abstract class AbstractTestQueries
 
         assertTrue(functions.containsKey("avg"), "Expected function names " + functions + " to contain 'avg'");
         assertEquals(functions.get("avg").asList().size(), 4);
-        assertEquals(functions.get("avg").asList().get(0).getField(1), "T");
-        assertEquals(functions.get("avg").asList().get(0).getField(2), "T");
+        assertEquals(functions.get("avg").asList().get(0).getField(1), "decimal(p,s)");
+        assertEquals(functions.get("avg").asList().get(0).getField(2), "decimal(p,s)");
         assertEquals(functions.get("avg").asList().get(0).getField(3), "aggregate");
         assertEquals(functions.get("avg").asList().get(1).getField(1), "double");
         assertEquals(functions.get("avg").asList().get(1).getField(2), "bigint");
